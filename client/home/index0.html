@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Todo Fancy</title>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://bootswatch.com/spacelab/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="../js/vue.js"></script>
+    <script src="../js/axios.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div v-if="token !== null">
+        <nav class="navbar navbar-inverse">
+          <div class="container">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="http://127.0.0.1:8080/home/index.html">Todo App</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="myNavbar">
+              <ul class="nav navbar-nav navbar-right">
+                <li><a @click="doLogout">Logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12 col-md-6 col-md-offset-3">
+              <h1>Welcome, {{name}}</h1>
+              <div class="row">
+                <div class="col-md-3">
+                  <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#createnew">Create New Task</button>
+                </div>
+              </div>
+              <!-- Modal -->
+              <div id="createnew" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title">Create new task</h4>
+                    </div>
+                    <div class="modal-body">
+                      <form class="form-horizontal">
+                        <div class="form-group">
+                          <label class="control-label col-sm-3" for="todo"><strong>Task Todo:</strong></label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" v-model="todo" placeholder="Enter new task">
+                          </div>
+                        </div>
+                        <!-- <div class="form-group">
+                          <label class="control-label col-sm-3" for="tglTaskTodo"><strong>Date Todo:</strong></label>
+                          <div class="col-sm-9">
+                            <input type="date" class="form-control" v-model="tglTaskTodo" placeholder="Enter date">
+                          </div>
+                        </div> -->
+                        <div class="form-group">
+                          <label class="control-label col-sm-3" for="tags">Tag(s):</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" v-model="tags" placeholder="Enter relevant tag(s), separate by comma">
+                          </div>
+                          <div class="form-group">
+                            <div class="col-sm-offset-1 col-sm-11">
+                              <button type="submit" class="btn btn-default" v-on:click="createNew()" data-dismiss="modal">Create</button>
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              
+              <div class="content">
+                <ul id="output" class="list-group" style="margin-top: 40px;">
+                  <li v-for="(task, index) in todos" class="list-group-item">
+                    <div class="row">
+                      <div class="col-xs-1">
+                        <a v-if="task.status" v-on:click="toggleStatus(task)"><span class="glyphicon glyphicon-check"></span></a>
+                        <a v-if="task.status==false" v-on:click="toggleStatus(task)"><span class="glyphicon glyphicon-unchecked"></span></a>
+                      </div>
+                      <!-- <div class="col-xs-10">
+                        <span style="font-size: 20px; margin-top: 0; line-height: 1.5em"><strong>{{ task.task }}</strong></span>
+                        <p><small>Date todo: {{ moment(task.tglTaskTodo).format('dddd, Do MMMM YYYY') }}</small></p>
+                        <p><small>Tags: {{ (task.tags).toString() }}</small></p>
+                      </div> -->
+                      <div class="col-xs-1">
+                        <a v-on:click="remove(task, index)"><span class="glyphicon glyphicon-trash"></span></a>
+                      </div>
+                      <div>
+                      </div>
+                    </div>
+                  </li>
+                  <button v-if="getSearch" @click="populateTodo" type="button" class="btn btn-primary btn-block">Back to all task</button>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div v-if="token === null">
+        <nav class="navbar navbar-inverse">
+          <div class="container">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="http://127.0.0.1:8080/index.html">Todo App</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="myNavbar">
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://127.0.0.1:8080/index.html">Access <i class="glyphicon glyphicon-user"></i></a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12 col-md-6 col-md-offset-3">
+              <h1>Please login to see your list task</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+
+      var app = new Vue({
+        el: '#app',
+        data: {
+          // token: localStorage.getItem("token") || '',
+          todos: [],
+          user: '',
+          todo: '',
+          tags: '',
+          tglTaskTodo: '',
+          search: '',
+          getSearch: false,
+          token: localStorage.getItem('token'),
+          name: localStorage.getItem('name'),
+          username: localStorage.getItem('username'),
+          email: localStorage.getItem('email')
+        },
+        created: function() {
+          this.populateTodo();
+          this.getUser();
+        },
+        methods: {
+          moment: function (date) {
+            return moment(date);
+          },
+          populateTodo: function() {
+            var self = this;
+            if(self.token.length > 0) {
+              axios.post('http://localhost:3000/todo', {
+                token: self.token
+              })
+              .then(response => {
+                self.todos = response.data;
+                self.getSearch = false
+              })
+              .catch(err => {
+
+              })
+            } else {
+              window.location.href = "./index.html";
+            }
+          },
+          getUser: function() {
+            var self = this;
+            axios.post('http://localhost:3000/userinfo', {
+              token: self.token
+            })
+            .then(response => {
+              self.user = response.data;
+            })
+            .catch(err => {
+
+            })
+          },
+          createNew: function() {
+            var self = this;
+            axios.post('http://localhost:3000/todo/add', {
+              task: self.todo,
+              // tglTaskTodo: self.tglTaskTodo,
+              tags: (self.tags).toLowerCase(),
+              token: self.token
+            })
+            .then(response => {
+              self.todo = ''
+              self.tags = ''
+              // self.tglTaskTodo = ''
+              self.populateTodo()
+            })
+            .catch(err => {
+
+            })
+          },
+          toggleStatus: function(todo) {
+            var value = !todo.status;
+            todo.status = value;
+            axios.put(`http://localhost:3000/todo/${todo._id}/toggle`, {
+              status: value
+            })
+            .then(response => {
+            })
+          },
+          remove: function(todo, index) {
+            if(window.confirm("Remove this item?")) {
+              app.todos.splice(index, 1)
+              axios.delete(`http://localhost:3000/todo/${todo._id}`, {
+                data: {
+                  _id: todo._id
+                }
+              })
+            }
+          },
+          searchTag: function(e) {
+            e.preventDefault()
+            console.log('tes');
+            let result = []
+            if(this.search.length > 0) {
+              this.todos.forEach(todo => {
+                if(todo.tags.includes((this.search).toLowerCase())) {
+                  result.push(todo)
+                }
+              })
+              this.getSearch = true
+            } else {
+              this.populateTodo()
+            }
+            this.todos = result
+            this.search = ''
+          },
+          doLogout(){
+            localStorage.removeItem("token");
+            localStorage.removeItem("name");
+            localStorage.removeItem("username");
+            localStorage.removeItem("email");
+            window.location.href = "./index.html";
+          }
+        }
+      })
+    </script>
+  </body>
+</html>

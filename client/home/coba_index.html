@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Todo Page</title>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/vue.js"></script>
+    <script src="../js/axios.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h1>{{message}}</h1>
+    </div>
+    <script type="text/javascript">
+
+      var app = new Vue({
+        el: '#app',
+        data: {
+          message: 'Hello Todo',
+          todos: [],
+          task: '',
+          tags: '',
+          status: false,
+          token: localStorage.getItem('token')
+          // name: localStorage.getItem('name'),
+          // username: localStorage.getItem('username'),
+          // email: localStorage.getItem('email')
+        },
+        created: function() {
+          this.populateTodo();
+          // this.getUser();
+        },
+        methods: {
+          populateTodo: function() {
+            var self = this;
+            if(self.token.length > 0) {
+              axios.post('http://localhost:3000/todo', {
+                token: self.token
+              })
+              .then(response => {
+                self.todos = response.data;
+                // self.getSearch = false
+              })
+              .catch(err => {
+
+              })
+            } else {
+              window.location.href = "./index.html";
+            }
+          },
+          getUser: function() {
+            var self = this;
+            axios.post('http://localhost:3000/userinfo', {
+              token: self.token
+            })
+            .then(response => {
+              self.user = response.data;
+            })
+            .catch(err => {
+
+            })
+          }
+        //   ,
+        //   createNew: function() {
+        //     var self = this;
+        //     axios.post('http://localhost:3000/todo/add', {
+        //       task: self.todo,
+        //       tglTaskTodo: self.tglTaskTodo,
+        //       tags: (self.tags).toLowerCase(),
+        //       token: self.token
+        //     })
+        //     .then(response => {
+        //       self.todo = ''
+        //       self.tags = ''
+        //       self.tglTaskTodo = ''
+        //       self.populateTodo()
+        //     })
+        //     .catch(err => {
+        // 
+        //     })
+        //   },
+        //   toggleStatus: function(todo) {
+        //     var value = !todo.status;
+        //     todo.status = value;
+        //     axios.put(`http://localhost:3000/todo/${todo._id}/toggle`, {
+        //       status: value
+        //     })
+        //     .then(response => {
+        //     })
+        //   },
+        //   remove: function(todo, index) {
+        //     if(window.confirm("Remove this item?")) {
+        //       app.todos.splice(index, 1)
+        //       axios.delete(`http://localhost:3000/todo/${todo._id}`, {
+        //         data: {
+        //           _id: todo._id
+        //         }
+        //       })
+        //     }
+        //   },
+        //   searchTag: function(e) {
+        //     e.preventDefault()
+        //     console.log('tes');
+        //     let result = []
+        //     if(this.search.length > 0) {
+        //       this.todos.forEach(todo => {
+        //         if(todo.tags.includes((this.search).toLowerCase())) {
+        //           result.push(todo)
+        //         }
+        //       })
+        //       this.getSearch = true
+        //     } else {
+        //       this.populateTodo()
+        //     }
+        //     this.todos = result
+        //     this.search = ''
+        //   },
+        //   doLogout(){
+        //     localStorage.removeItem("token");
+        //     localStorage.removeItem("name");
+        //     localStorage.removeItem("username");
+        //     localStorage.removeItem("email");
+        //     window.location.href = "./index.html";
+        //   }
+        // }
+      })
+    </script>
+  </body>
+</html>

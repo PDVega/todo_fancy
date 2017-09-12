@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Todo Fancy</title>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://bootswatch.com/spacelab/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="../js/vue.js"></script>
+    <script src="../js/axios.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div v-if="token !== null">
+        <nav class="navbar navbar-inverse">
+          <div class="container">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="http://127.0.0.1:8080/home/index.html">Todo App</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="myNavbar">
+              <ul class="nav navbar-nav navbar-right">
+                <li><a>Hi, {{name}}</a></li>
+                <li><a @click="doLogout">Logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12 col-md-8">
+              <div class="row">
+                <div class="col-md-10">
+                  <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createnew">Add New Task</button>
+                </div>
+              </div>
+              
+              
+              <!-- Modal create new-->
+              <div id="createnew" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+              
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title">Create new task</h4>
+                    </div>
+                    <div class="modal-body">
+                      <form class="form-horizontal">
+                        <div class="form-group">
+                          <label class="control-label col-sm-3" for="todo"><strong>Task Todo:</strong></label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" v-model="todo" placeholder="Enter new task">
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label class="control-label col-sm-3" for="tags">Tag(s):</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" v-model="tags" placeholder="Enter relevant tag(s), separate by comma">
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                    
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-primary" v-on:click="createNew()" data-dismiss="modal">Create</button>
+                      <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              
+              <div class="content">
+                <ul id="output" class="list-group" style="margin-top: 40px;">
+                  <li v-for="(task, index) in todos" class="list-group-item">
+                    <div class="row">
+                      <div class="col-xs-offset-1">
+                      <h3>{{task.task}}</h3>
+                      <div class="col-xs-1">
+                        <a v-if="task.status" v-on:click="toggleStatus(task)"><span class="glyphicon glyphicon-check"></span></a>
+                        <a v-if="task.status==false" @click="toggleStatus(task)"><span class="glyphicon glyphicon-unchecked"></span></a>
+                      </div>
+                      
+                      <div class="col-xs-1">
+                        <a @click="getDataUpdate(index, task._id)"><span class="glyphicon glyphicon-pencil" data-toggle="modal" data-target="#updatemodal"></span></a>
+                        <!-- <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createnew">Add New Task</button> -->
+                      </div>
+                      
+                      <div class="col-xs-1">
+                        <a @click="remove(task, index)"><span class="glyphicon glyphicon-trash"></span></a>
+                      </div>
+                    </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal Update-->
+      <div id="updatemodal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+      
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h4 class="modal-title">Update task</h4>
+            </div>
+            <div class="modal-body">
+              <form class="form-horizontal">
+                <div class="form-group">
+                  <label class="control-label col-sm-3" for="todo"><strong>Task Todo:</strong></label>
+                  <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="editTodo.task" placeholder="Enter new task">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-sm-3" for="tags">Tag(s):</label>
+                  <div class="col-sm-9">
+                    <input type="text" class="form-control" v-model="editTodo.tags" placeholder="Enter relevant tag(s), separate by comma">
+                  </div>
+                </div>
+              </form>
+            </div>
+            
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary" @click="updateTodo(editTodo._id)" data-dismiss="modal">Update</button>
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div v-if="token === null">
+        <nav class="navbar navbar-inverse">
+          <div class="container">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="http://127.0.0.1:8080/index.html">Todo App</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="myNavbar">
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://127.0.0.1:8080/index.html">Access <i class="glyphicon glyphicon-user"></i></a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-12 col-md-6 col-md-offset-3">
+              <h1>Please login to see your list task</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+
+      var app = new Vue({
+        el: '#app',
+        data: {
+          todos: [],
+          todo: '',
+          tags: '',
+          token: localStorage.getItem('token'),
+          name: localStorage.getItem('name'),
+          username: localStorage.getItem('username'),
+          email: localStorage.getItem('email'),
+          editTodo: ''
+        },
+        created: function() {
+          this.populateTodo();
+        },
+        methods: {
+          populateTodo: function() {
+            var self = this;
+            if(self.token.length > 0) {
+              axios.post('http://localhost:3000/todo', {
+                token: self.token
+              })
+              .then(response => {
+                self.todos = response.data;
+              })
+              .catch(err => {
+
+              })
+            } else {
+              window.location.href = "./index.html";
+            }
+          },
+          createNew: function() {
+            var self = this;
+            axios.post('http://localhost:3000/todo/add', {
+              task: self.todo,
+              tags: (self.tags).toLowerCase(),
+              token: self.token
+            })
+            .then(response => {
+              self.todo = ''
+              self.tags = ''
+              self.populateTodo()
+            })
+            .catch(err => {
+            })
+          },
+          toggleStatus: function(todo) {
+            var value = !todo.status;
+            todo.status = value;
+            axios.put(`http://localhost:3000/todo/${todo._id}/toggle`, {
+              status: value
+            })
+            .then(response => {
+            })
+          },
+          getDataUpdate: function(index, id) {
+            let self = this
+            this.todos.splice(index, 1)
+            axios.get(`http://localhost:3000/todo/${id}`)
+            .then(result => {
+              console.log(result);
+              self.editTodo = result.data[0]
+            })
+          },
+          updateTodo(id){
+            let self = this
+            axios.put(`http://localhost:3000/todo/${id}`, self.editTodo, {headers: {token: self.token}})
+            .then(result => {
+              self.todos.unshift(result.data)
+              console.log('data update', result.data);
+            })
+          },
+          remove: function(todo, index) {
+            if(window.confirm("Remove this item?")) {
+              app.todos.splice(index, 1)
+              axios.delete(`http://localhost:3000/todo/${todo._id}`, {
+                data: {
+                  _id: todo._id
+                }
+              })
+            }
+          },
+          doLogout(){
+            localStorage.removeItem("token");
+            localStorage.removeItem("name");
+            localStorage.removeItem("username");
+            localStorage.removeItem("email");
+            window.location.href = "./index.html";
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
