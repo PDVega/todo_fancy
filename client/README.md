@@ -6,8 +6,8 @@ Todo Fancy Clientside using VUE Directive
 
 ### Setting route
 
-routes | HTTP | Description
--------|------|------------
+routes | HTTP 
+-------|------
 http://127.0.0.1:8080/index.html | Login and Register, Access todos application with username and password
 http://127.0.0.1:8080/home/index.html | CRUD Todo
 
